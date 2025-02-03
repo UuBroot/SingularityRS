@@ -21,7 +21,7 @@ pub fn text_convert(input: &str , output: &str , input_format: &str, output_form
 pub fn text_is_supported_format(name:&str) -> bool {
     SUPPORTED_FORMATS.contains(&name)
 }
-fn read_file(path: &str, format: &str) -> Result<HashMap<String, serde_json::Value>, String> {
+fn read_file(path: &str, format: &str) -> Result<HashMap<String, Value>, String> {
     let mut file = match File::open(path) {
         Ok(f) => f,
         Err(e) => return Err(format!("Error opening file: {}", e)),

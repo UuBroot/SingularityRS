@@ -38,7 +38,6 @@ pub fn convert(input: &str, output: &str) {
             return
         },
     };
-    println!("input format: {}, output format: {}", input_format, output_format);
 
     //gets absolute path for input
     let abs_input = match get_absolute_path(input){
