@@ -1,9 +1,12 @@
 mod files;
 mod ffmpeg_module;
+mod text_module;
 
 use std::path::Path;
 use crate::service::files::{get_absolute_path, make_empty_file};
 use crate::service::ffmpeg_module::{ffmpeg_convert, ffmpeg_is_supported_format};
+use crate::service::text_module::{text_convert, text_is_supported_format};
+
 pub fn convert(input: &str, output: &str) {
     println!("converting {} to {}", input, output);
 
@@ -27,6 +30,14 @@ pub fn convert(input: &str, output: &str) {
         .last()
         .unwrap();
 
+    //gets the module to use
+    let module_to_use = match get_module_to_use(input_format, output_format) {
+        Some(module) => module,
+        None => {
+            eprintln!("File not supported");
+            return
+        },
+    };
     println!("input format: {}, output format: {}", input_format, output_format);
 
     //gets absolute path for input
@@ -69,13 +80,68 @@ pub fn convert(input: &str, output: &str) {
         return;
     }
 
-    if ffmpeg_is_supported_format(input_format) && ffmpeg_is_supported_format(output_format){
-        match ffmpeg_convert(&*abs_input, &*abs_output) {
-            Ok(message) => println!("{}", message),
-            Err(error) => println!("Error: {}", error),
+    match module_to_use.as_str() {
+        "ffmpeg"=>{
+            match ffmpeg_convert(&*abs_input, &*abs_output) {
+                Ok(message) => println!("{}", message),
+                Err(error) => println!("Error: {}", error),
+            }
         }
-    }else{
-        println!("format is not supported yet");
+        "text"=>{
+            match text_convert(&*abs_input, &*abs_output, &input_format, &output_format) {
+                Ok(message) => println!("{}", message),
+                Err(error) => println!("Error: {}", error),
+            }
+        }
+        _ => {
+            eprintln!("format not supported");
+        }
     }
+}
+fn get_module_to_use(input_format: &str, output_format: &str) -> Option<String> {
+    let input_module = match get_module_from_format(input_format) {
+        Some(module) => module,
+        None => return None,
+    };
+    let output_module = match get_module_from_format(output_format) {
+        Some(module) => module,
+        None => return None,
+    };
+    if input_module == output_module {
+        Some(input_module.to_string())
+    }
+    else {
+        let all_input_modules = get_all_modules_from_format(input_format);
+        let all_output_modules = get_all_modules_from_format(output_format);
 
+        if all_input_modules.iter().filter(|&n| *n == output_module).count() > 0{
+            Some(output_module.to_string())
+        }else if all_output_modules.iter().filter(|&n| *n == input_module).count() > 0 {
+            Some(input_module.to_string())
+        }
+        else {
+            None
+        }
+    }
+}
+fn get_module_from_format(format: &str) -> Option<String> {
+    if ffmpeg_is_supported_format(format) {
+        Some("ffmpeg".to_string())
+    }
+    else if text_is_supported_format(format) {
+        Some("text".to_string())
+    }
+    else{
+        None
+    }
+}
+fn get_all_modules_from_format(format: &str) -> Vec<String> {
+    let mut all_modules: Vec<String> = Vec::new();
+    if ffmpeg_is_supported_format(format) {
+        all_modules.push("ffmpeg".to_string());
+    }
+    if text_is_supported_format(format) {
+        all_modules.push("text".to_string());
+    }
+    all_modules
 }
