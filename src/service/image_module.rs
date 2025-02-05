@@ -1,4 +1,4 @@
-const SUPPORTED_FORMATS: [&str; 16] = ["png", "jpeg", "jpg", "gif", "tiff", "tif", "bmp", "webp", "avif", "hdr", "ico", "tga", "dds", "exr", "qoi", "pnm"];
+use image::ImageFormat;
 pub fn image_convert(input: &str , output: &str ) -> Result<String, String> {
     let img = match image::open(input) {
         Ok(img) => img,
@@ -11,5 +11,10 @@ pub fn image_convert(input: &str , output: &str ) -> Result<String, String> {
     Ok(String::from(output))
 }
 pub fn image_is_supported_format(name:&str) -> bool {
-    SUPPORTED_FORMATS.contains(&name)
+    for f in ImageFormat::all(){
+        if f.extensions_str()[0] == name{
+            return true;
+        }
+    }
+    false
 }
