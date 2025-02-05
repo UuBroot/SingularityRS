@@ -4,7 +4,7 @@ use std::io::{Read, Write};
 use serde_json;
 use serde_json::Value;
 use serde_yaml;
-static SUPPORTED_FORMATS: [&str; 3] = [ "json","yaml","yml"];
+const SUPPORTED_FORMATS: [&str; 3] = [ "json","yaml","yml"];
 
 pub fn text_convert(input: &str , output: &str , input_format: &str, output_format: &str) -> Result<String, String> {
     let data = match read_file(input, input_format) {
