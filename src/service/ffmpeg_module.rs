@@ -15,14 +15,12 @@ pub fn ffmpeg_convert(input: &str , output: &str ) -> Result<String, String> {
 pub fn ffmpeg_is_supported_format(name:&str) -> bool {
     SUPPORTED_FORMATS.contains(&name)
 }
-
 fn is_ffmpeg_installed() -> bool{
     match Command::new("ffmpeg").arg("-version").output() {
         Ok(output) => output.status.success(),
         Err(_) => false,
     }
 }
-
 fn run_ffmpeg_command(input: &str, output: &str){
     let total_frames = match get_video_frame_count(input) {
         Ok(frames) => {
@@ -34,7 +32,6 @@ fn run_ffmpeg_command(input: &str, output: &str){
             return;
         }
     };
-
     let process = Command::new("ffmpeg")
         .arg("-i")
         .arg(input.to_string())
@@ -63,7 +60,6 @@ fn run_ffmpeg_command(input: &str, output: &str){
         }
     }
     let stderr = BufReader::new(process.stderr.expect("Failed to capture ffmpeg error"));
-
     for line in stderr.lines() {
         match line {
             Ok(line) => {
@@ -79,7 +75,6 @@ fn get_percentage(line: &str, total_frames: &u64)-> f64{
     let current_frame = line.split('=').collect::<Vec<&str>>()[1].parse::<i32>().unwrap();
     (current_frame as f64 / *total_frames as f64)* 100.0
 }
-
 fn get_video_frame_count(path: &str) -> Result<u64, String> {
     let output = Command::new("ffprobe")
         .args(&["-v", "error", "-select_streams", "v:0", "-count_packets", "-show_entries", "stream=nb_read_packets", "-of", "csv=p=0", path])
