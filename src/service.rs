@@ -1,20 +1,18 @@
-mod files;
 mod ffmpeg_module;
-mod text_module;
+mod files;
 mod image_module;
+mod text_module;
 
-use std::path::Path;
-use crate::service::files::{get_absolute_path, make_empty_file};
 use crate::service::ffmpeg_module::{ffmpeg_convert, ffmpeg_is_supported_format};
+use crate::service::files::{get_absolute_path, make_empty_file};
 use crate::service::image_module::{image_convert, image_is_supported_format};
 use crate::service::text_module::{text_convert, text_is_supported_format};
+use std::path::Path;
 
 pub fn convert(input: &str, output: &str) {
     println!("converting {} to {}", input, output);
 
-    let input_format_split: Vec<_> = input
-        .split('/')
-        .collect();
+    let input_format_split: Vec<_> = input.split('/').collect();
     let input_format = input_format_split
         .last()
         .unwrap()
@@ -22,9 +20,7 @@ pub fn convert(input: &str, output: &str) {
         .last()
         .unwrap();
 
-    let output_format_split: Vec<_> = output
-        .split('/')
-        .collect();
+    let output_format_split: Vec<_> = output.split('/').collect();
     let output_format = output_format_split
         .last()
         .unwrap()
@@ -37,15 +33,13 @@ pub fn convert(input: &str, output: &str) {
         Some(module) => module,
         None => {
             eprintln!("File not supported");
-            return
-        },
+            return;
+        }
     };
 
     //gets absolute path for input
-    let abs_input = match get_absolute_path(input){
-        Some(abs_path)=>{
-            abs_path
-        },
+    let abs_input = match get_absolute_path(input) {
+        Some(abs_path) => abs_path,
         None => {
             println!("File does not exist or cannot be resolved.");
             "".parse().unwrap()
@@ -55,10 +49,8 @@ pub fn convert(input: &str, output: &str) {
     //creates a temporary file to get the absolute path without errors
     make_empty_file(output);
     //gets absolute path for output
-    let abs_output = match get_absolute_path(output){
-        Some(abs_path)=>{
-            abs_path
-        },
+    let abs_output = match get_absolute_path(output) {
+        Some(abs_path) => abs_path,
         None => {
             println!("File does not exist or cannot be resolved.");
             "".parse().unwrap()
@@ -66,7 +58,7 @@ pub fn convert(input: &str, output: &str) {
     };
 
     let mut output_folder_split: Vec<_> = abs_output.split('/').collect();
-    output_folder_split.pop();//removes the filename from the output
+    output_folder_split.pop(); //removes the filename from the output
     let output_folder = output_folder_split.join("/");
 
     //Checks if input file exists
@@ -82,23 +74,17 @@ pub fn convert(input: &str, output: &str) {
     }
 
     match module_to_use.as_str() {
-        "ffmpeg"=>{
-            match ffmpeg_convert(&*abs_input, &*abs_output) {
-                Ok(message) => println!("{}", message),
-                Err(error) => println!("Error: {}", error),
-            }
+        "ffmpeg" => match ffmpeg_convert(&*abs_input, &*abs_output) {
+            Ok(message) => println!("{}", message),
+            Err(error) => println!("Error: {}", error),
         },
-        "text"=>{
-            match text_convert(&*abs_input, &*abs_output, &input_format, &output_format) {
-                Ok(message) => println!("{}", message),
-                Err(error) => println!("Error: {}", error),
-            }
+        "text" => match text_convert(&*abs_input, &*abs_output, &input_format, &output_format) {
+            Ok(message) => println!("{}", message),
+            Err(error) => println!("Error: {}", error),
         },
-        "image"=>{
-            match image_convert(&*abs_input, &*abs_output) {
-                Ok(message) => println!("{}", message),
-                Err(error) => println!("Error: {}", error),
-            }
+        "image" => match image_convert(&*abs_input, &*abs_output) {
+            Ok(message) => println!("{}", message),
+            Err(error) => println!("Error: {}", error),
         },
         _ => {
             eprintln!("format not supported");
@@ -116,17 +102,25 @@ fn get_module_to_use(input_format: &str, output_format: &str) -> Option<String> 
     };
     if input_module == output_module {
         Some(input_module.to_string())
-    }
-    else {
+    } else {
         let all_input_modules = get_all_modules_from_format(input_format);
         let all_output_modules = get_all_modules_from_format(output_format);
 
-        if all_input_modules.iter().filter(|&n| *n == output_module).count() > 0{
+        if all_input_modules
+            .iter()
+            .filter(|&n| *n == output_module)
+            .count()
+            > 0
+        {
             Some(output_module.to_string())
-        }else if all_output_modules.iter().filter(|&n| *n == input_module).count() > 0 {
+        } else if all_output_modules
+            .iter()
+            .filter(|&n| *n == input_module)
+            .count()
+            > 0
+        {
             Some(input_module.to_string())
-        }
-        else {
+        } else {
             None
         }
     }
@@ -134,14 +128,11 @@ fn get_module_to_use(input_format: &str, output_format: &str) -> Option<String> 
 fn get_module_from_format(format: &str) -> Option<String> {
     if image_is_supported_format(format) {
         Some("image".to_string())
-    }
-    else if ffmpeg_is_supported_format(format) {
+    } else if ffmpeg_is_supported_format(format) {
         Some("ffmpeg".to_string())
-    }
-    else if text_is_supported_format(format) {
+    } else if text_is_supported_format(format) {
         Some("text".to_string())
-    }
-    else{
+    } else {
         None
     }
 }
