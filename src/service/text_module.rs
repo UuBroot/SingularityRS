@@ -4,8 +4,7 @@ use std::io::{Read, Write};
 use serde_json;
 use serde_json::Value;
 use serde_yaml;
-
-static SUPPORTED_FORMATS: [&str; 5] = [ "json","yaml","yml","xml","csv"];
+static SUPPORTED_FORMATS: [&str; 3] = [ "json","yaml","yml"];
 
 pub fn text_convert(input: &str , output: &str , input_format: &str, output_format: &str) -> Result<String, String> {
     let data = match read_file(input, input_format) {
@@ -54,31 +53,28 @@ fn write_file(path: &str, data: HashMap<String, Value>, format: &str) -> Result<
         Ok(f) => f,
         Err(e) => return Err(format!("Error creating file: {}", e)),
     };
-    match format {
+    let file_string = match format {
         "json" => {
             // Convert HashMap to JSON string
-            let json_string: String = match serde_json::to_string_pretty(&data) {
+            match serde_json::to_string_pretty(&data) {
                 Ok(json) => json,
                 Err(e) => return Err(format!("Error converting to JSON: {}", e)),
-            };
-            match file.write_all(json_string.as_bytes()) {
-                Ok(_) => Ok(()),
-                Err(e) => Err(format!("Error writing to file: {}", e)),
             }
-        }
+        },
         "yaml" | "yml" => {
-            let yaml_string: String = match serde_yaml::to_string(&data) {
+            match serde_yaml::to_string(&data) {
                 Ok(yaml) => yaml,
                 Err(e) => return Err(format!("Error converting to YAML: {}", e)),
-            };
-            match file.write_all(yaml_string.as_bytes()) {
-                Ok(_) => Ok(()),
-                Err(e) => Err(format!("Error writing to file: {}", e)),
             }
-        }
+        },
         _ => {
             eprintln!("Error writing file!");
-            Err(format!("Unsupported file type: {}", format))
+            return Err(format!("Unsupported file type: {}", format))
         }
+    };
+    //writes the output file
+    match file.write_all(file_string.as_bytes()) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("Error writing to file: {}", e)),
     }
 }
