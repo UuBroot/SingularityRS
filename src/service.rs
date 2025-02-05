@@ -1,10 +1,12 @@
 mod files;
 mod ffmpeg_module;
 mod text_module;
+mod image_module;
 
 use std::path::Path;
 use crate::service::files::{get_absolute_path, make_empty_file};
 use crate::service::ffmpeg_module::{ffmpeg_convert, ffmpeg_is_supported_format};
+use crate::service::image_module::{image_convert, image_is_supported_format};
 use crate::service::text_module::{text_convert, text_is_supported_format};
 
 pub fn convert(input: &str, output: &str) {
@@ -85,13 +87,19 @@ pub fn convert(input: &str, output: &str) {
                 Ok(message) => println!("{}", message),
                 Err(error) => println!("Error: {}", error),
             }
-        }
+        },
         "text"=>{
             match text_convert(&*abs_input, &*abs_output, &input_format, &output_format) {
                 Ok(message) => println!("{}", message),
                 Err(error) => println!("Error: {}", error),
             }
-        }
+        },
+        "image"=>{
+            match image_convert(&*abs_input, &*abs_output) {
+                Ok(message) => println!("{}", message),
+                Err(error) => println!("Error: {}", error),
+            }
+        },
         _ => {
             eprintln!("format not supported");
         }
@@ -124,7 +132,10 @@ fn get_module_to_use(input_format: &str, output_format: &str) -> Option<String> 
     }
 }
 fn get_module_from_format(format: &str) -> Option<String> {
-    if ffmpeg_is_supported_format(format) {
+    if image_is_supported_format(format) {
+        Some("image".to_string())
+    }
+    else if ffmpeg_is_supported_format(format) {
         Some("ffmpeg".to_string())
     }
     else if text_is_supported_format(format) {
