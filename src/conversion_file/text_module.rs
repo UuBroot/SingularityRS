@@ -4,19 +4,14 @@ use serde_yaml;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Write};
+use crate::files::get_file_format;
 const SUPPORTED_FORMATS: [&str; 3] = ["json", "yaml", "yml"];
-
-pub fn text_convert(
-    input: &str,
-    output: &str,
-    input_format: &str,
-    output_format: &str,
-) -> Result<String, String> {
-    let data = match read_file(input, input_format) {
+pub fn text_convert(input: &str, output: &str) -> Result<String, String> {
+    let data = match read_file(input, get_file_format(input)) {
         Ok(f) => f,
         Err(e) => return Err(format!("Error while reading file: {}", e)),
     };
-    match write_file(output, data, output_format) {
+    match write_file(output, data, get_file_format(output)) {
         Ok(f) => f,
         Err(e) => return Err(format!("Error while writing file: {}", e)),
     }

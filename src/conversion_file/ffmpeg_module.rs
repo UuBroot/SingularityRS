@@ -1,6 +1,5 @@
 use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
-
 const SUPPORTED_FORMATS: [&str; 74] = [
     "mp4", "webm", "flac", "apng", "asf", "ea", "mp3", "wav", "mov", "a64", "aac", "ac3", "adts",
     "adx", "afc", "aiff", "apm", "aptx", "ast", "au", "avi", "avif", "binka", "bit", "caf",
@@ -9,7 +8,6 @@ const SUPPORTED_FORMATS: [&str; 74] = [
     "mpeg", "mtv", "mulaw", "mxf", "nut", "obu", "oga", "ogg", "ogv", "opus", "psp", "sbc", "sox",
     "spdif", "spx", "svs", "tta", "vag", "vob", "voc", "w64", "wav", "webm", "webp", "wtv", "wv",
 ];
-
 pub fn ffmpeg_convert(input: &str, output: &str) -> Result<String, String> {
     if is_ffmpeg_installed() {
         run_ffmpeg_command(input, output);
@@ -29,6 +27,7 @@ fn is_ffmpeg_installed() -> bool {
     }
 }
 fn run_ffmpeg_command(input: &str, output: &str) {
+    println!("{}{}", input, output);
     let total_frames = match get_video_frame_count(input) {
         Ok(frames) => {
             println!("total frames: {}", frames);
