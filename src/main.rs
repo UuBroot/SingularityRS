@@ -3,6 +3,7 @@ mod module;
 mod files;
 mod service;
 use service::convert;
+mod gui_service;
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let input_path: String = args[1].clone();
